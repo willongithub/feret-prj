@@ -3,8 +3,11 @@
 # ========================================================
 """Entry point."""
 
-def main():
+import utils
 
+def main():
+    utils.get_scores()
+    print("\nEnd of Process")
 
 if __name__ == '__main__':
     main()
