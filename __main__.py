@@ -11,7 +11,9 @@ def main():
 
     filenames, encodings = utils.get_encodings("assets/FeretMedium/")
     result = utils.get_scores(filenames, encodings)
-    utils.get_output(result)
+    output = utils.get_output(result)
+    # utils.get_distribution(output)
+    rate = utils.get_equal_error_rate(output)
 
     end_time = time.perf_counter()
 
