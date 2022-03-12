@@ -15,7 +15,7 @@ def get_encodings(folder):
     face_encodings = []
     face_names = []
     with os.scandir(path) as files:
-        count = 0
+        # count = 0
         for entry in files:
             if entry.is_file() and entry.name.endswith(".jpg"):
                 # count += 1
@@ -86,5 +86,22 @@ def get_equal_error_rate(df):
             temp = abs(false_match/match - false_non_match/non_match)
             result = th
 
-    print(result)
     return result
+
+# Prompt info for CLI interface.
+PROMPT_INIT = """
+> Run face match algorithm.  [1]
+> Output result as CSV file. [2]
+> Plot matches distribution. [3]
+> Find equal error rate.     [4]
+> Run all.                   [0]
+> Exit.                      [e]
+:"""
+
+PROMPT_INPUT = """
+> Enter input folder path (press Enter for default):\t
+"""
+
+PROMPT_OUTPUT = """
+> Enter output CSV file path (press Enter for default):\t
+"""
