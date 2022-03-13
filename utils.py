@@ -59,15 +59,35 @@ def get_output(result, dir: str=""):
     })
     output.to_csv(dir)
 
+    print(f"Output save at: {dir}")
+
     return output
 
 def get_distribution(df):
-    sns.displot(
-        df,
-        x="score", bins=100, kde=True, hue="match",
-        # log_scale=(False, True)
-    )
+    gen = df[df["match"] == True]
+    non_gen = df[df["match"] == False]
+
+    # sns.displot(
+    #     df,
+    #     x="score", bins=100, kde=True, hue="match",
+    #     # log_scale=(False, True)
+    # )
     # plt.show()
+
+    sns.displot(
+        gen,
+        x="score", bins=20, kde=True,
+        # log_scale=(False, True)
+    ).set(title="Genuine")
+    # plt.show()
+
+    sns.displot(
+        non_gen,
+        x="score", bins=30, kde=True,
+        # log_scale=(False, True)
+    ).set(title="Non-Genuine")
+    plt.show()
+
     return
 
 def get_equal_error_rate(df):
@@ -80,7 +100,7 @@ def get_equal_error_rate(df):
         non_match = sum(df["score"] <= th)
 
         if match == 0 or non_match == 0:
-            pass
+            continue
         
         if abs(false_match/match - false_non_match/non_match) < temp:
             temp = abs(false_match/match - false_non_match/non_match)
@@ -91,9 +111,8 @@ def get_equal_error_rate(df):
 # Prompt info for CLI interface.
 PROMPT_INIT = """
 > Run face match algorithm.  [1]
-> Output result as CSV file. [2]
-> Plot matches distribution. [3]
-> Find equal error rate.     [4]
+> Plot matches distribution. [2]
+> Find equal error rate.     [3]
 > Run all.                   [0]
 > Exit.                      [e]
 :"""
