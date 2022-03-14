@@ -61,6 +61,7 @@ def get_output(result, dir: str=""):
         "match": result[3]
     })
     output = output[output["score"] != 100.]
+    output.drop_duplicates(subset=["probe", "score"], keep='last')
     output.to_csv(dir)
 
     print(f"Output save at: {dir}")
@@ -110,6 +111,7 @@ def get_equal_error_rate(df):
     g = sns.displot(
         df,
         x="score", bins=100, hue="match",
+        # kde=True,
         stat="percent",
         common_norm=False,
     ).set(title="Threshold Score for EER")
