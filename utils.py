@@ -10,17 +10,15 @@ import seaborn as sns
 import os
 
 def get_encodings(folder):
+    """Calculate face encoding for all images in the folder."""
+    
     path = os.path.join(os.getcwd(), folder)
-
     face_encodings = []
     face_names = []
+
     with os.scandir(path) as files:
-        # count = 0
         for entry in files:
             if entry.is_file() and entry.name.endswith(".jpg"):
-                # count += 1
-                # if count > 10:
-                #     break
                 img_array = fr.load_image_file(entry.path)
                 if len(fr.face_encodings(img_array)) < 1:
                     print(f"Unidentified: ", entry.name)
@@ -31,13 +29,14 @@ def get_encodings(folder):
     return face_names, face_encodings
 
 def get_scores(names, encodings):
-    probes, subjects, scores, matches = ([] for i in range(4))
+    """Calculate distance between faces as matching score."""
+
+    probes, subjects, scores, matches = ([] for _ in range(4))
 
     for i in range(len(names)):
         probes.extend([names[i]]*(len(names) - i))
         subjects.extend(names[i:])
         scores.extend(1 - fr.face_distance(encodings[i:], encodings[i]))
-        # matches.extend(fr.compare_faces(encodings[i:], encodings[i]))
     
     for i in range(len(probes)):
         if probes[i][:5] == subjects[i][:5]:
@@ -50,6 +49,8 @@ def get_scores(names, encodings):
     return result
 
 def get_output(result, dir: str=""):
+    """Output results to CSV file."""
+
     dir = f"{dir}result.csv"
     output = pd.DataFrame({
         "probe": result[0],
@@ -64,6 +65,8 @@ def get_output(result, dir: str=""):
     return output
 
 def get_distribution(df):
+    """Simple analysis on the results."""
+
     gen = df[df["match"] == True]
     non_gen = df[df["match"] == False]
 
@@ -74,23 +77,25 @@ def get_distribution(df):
     # )
     # plt.show()
 
-    sns.displot(
+    g = sns.displot(
         gen,
         x="score", bins=20, kde=True,
-        # log_scale=(False, True)
     ).set(title="Genuine")
+    g.refline(x = gen.score.mean())
     # plt.show()
 
-    sns.displot(
+    g = sns.displot(
         non_gen,
         x="score", bins=30, kde=True,
-        # log_scale=(False, True)
     ).set(title="Non-Genuine")
+    g.refline(x = non_gen.score.mean())
     plt.show()
 
     return
 
 def get_equal_error_rate(df):
+    """Find equal error rate."""
+
     temp = 1
     for th in range(1,99):
         th /= 100
@@ -104,9 +109,10 @@ def get_equal_error_rate(df):
         
         if abs(false_match/match - false_non_match/non_match) < temp:
             temp = abs(false_match/match - false_non_match/non_match)
-            result = th
+            score = th
+            eer = false_match/match
 
-    return result
+    return score, eer
 
 # Prompt info for CLI interface.
 PROMPT_INIT = """
