@@ -36,8 +36,8 @@ def main():
         
         if flag in ('0', '3'):
             score, eer = utils.get_equal_error_rate(output)
-            print(f"Equal error rate threshold: {score}")
-            print(f"Equal error rate: {eer*100:0.2f}%")
+            print(f"Threshold score for EER: {score}")
+            print(f"Equal error rate: {eer*100:0.4f}%")
         
         if flag == 'e': break
     

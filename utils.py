@@ -33,10 +33,12 @@ def get_scores(names, encodings):
 
     probes, subjects, scores, matches = ([] for _ in range(4))
 
-    for i in range(len(names)):
-        probes.extend([names[i]]*(len(names) - i))
-        subjects.extend(names[i:])
-        scores.extend(1 - fr.face_distance(encodings[i:], encodings[i]))
+    for i in range(len(names) - 1):
+        probes.extend([names[i]]*(len(names) - 1 - i))
+        subjects.extend(names[i + 1:])
+        scores.extend(
+            (1 - fr.face_distance(encodings[i + 1:], encodings[i]))*100
+        )
     
     for i in range(len(probes)):
         if probes[i][:5] == subjects[i][:5]:
@@ -58,6 +60,7 @@ def get_output(result, dir: str=""):
         "score": result[2],
         "match": result[3]
     })
+    output = output[output["score"] != 100.]
     output.to_csv(dir)
 
     print(f"Output save at: {dir}")
@@ -68,27 +71,20 @@ def get_distribution(df):
     """Simple analysis on the results."""
 
     gen = df[df["match"] == True]
-    non_gen = df[df["match"] == False]
-
-    # sns.displot(
-    #     df,
-    #     x="score", bins=100, kde=True, hue="match",
-    #     # log_scale=(False, True)
-    # )
-    # plt.show()
+    imp = df[df["match"] == False]
 
     g = sns.displot(
         gen,
-        x="score", bins=20, kde=True,
+        x="score", bins=30, kde=True,
     ).set(title="Genuine")
     g.refline(x = gen.score.mean())
     # plt.show()
 
     g = sns.displot(
-        non_gen,
+        imp,
         x="score", bins=30, kde=True,
-    ).set(title="Non-Genuine")
-    g.refline(x = non_gen.score.mean())
+    ).set(title="Impostor")
+    g.refline(x = imp.score.mean())
     plt.show()
 
     return
@@ -97,30 +93,38 @@ def get_equal_error_rate(df):
     """Find equal error rate."""
 
     temp = 1
-    for th in range(1,99):
-        th /= 100
-        false_match = sum(df[df["score"] > th]["match"] == False)
-        match = sum(df["score"] > th)
-        false_non_match = sum(df[df["score"] <= th]["match"] == True)
-        non_match = sum(df["score"] <= th)
+    for th in range(1, 99):
+        false_match = sum(df[df["score"] <= th]["match"] == True)
+        match = sum(df["match"] == True)
+        false_non_match = sum(df[df["score"] > th]["match"] == False)
+        non_match = sum(df["match"] == False)
 
-        if match == 0 or non_match == 0:
+        if false_match == 0 or false_non_match == 0:
             continue
-        
+
         if abs(false_match/match - false_non_match/non_match) < temp:
             temp = abs(false_match/match - false_non_match/non_match)
             score = th
             eer = false_match/match
+    
+    g = sns.displot(
+        df,
+        x="score", bins=100, hue="match",
+        stat="percent",
+        common_norm=False,
+    ).set(title="Threshold Score for EER")
+    g.refline(x = score)
+    plt.show()
 
     return score, eer
 
 # Prompt info for CLI interface.
 PROMPT_INIT = """
-> Run face match algorithm.  [1]
-> Plot matches distribution. [2]
-> Find equal error rate.     [3]
-> Run all.                   [0]
-> Exit.                      [e]
+> Run face match algorithm.     [1]
+> Plot score distribution.      [2]
+> Find threshold score for EER. [3]
+> Run all.                      [0]
+> Exit.                         [e]
 :"""
 
 PROMPT_INPUT = """
