@@ -1,5 +1,5 @@
-assets/
 .venv/
 .DS_Store
+facerec/assets/*
 *.pyc
 *.csv

@@ -10,7 +10,7 @@ import seaborn as sns
 import os
 
 def get_encodings(folder):
-    """Calculate face encoding for all images in the folder."""
+    """Calculate face encodings for all images in the folder."""
     
     path = os.path.join(os.getcwd(), folder)
     face_encodings = []
@@ -51,7 +51,7 @@ def get_scores(names, encodings):
     return result
 
 def get_output(result, dir: str=""):
-    """Output results to CSV file."""
+    """Format and output results to CSV file."""
 
     dir = f"{dir}result.csv"
     output = pd.DataFrame({
@@ -79,7 +79,6 @@ def get_distribution(df):
         x="score", bins=30, kde=True,
     ).set(title="Genuine")
     g.refline(x = gen.score.mean())
-    # plt.show()
 
     g = sns.displot(
         imp,
@@ -120,14 +119,14 @@ def get_equal_error_rate(df):
 
     return score, eer
 
-# Prompt info for CLI interface.
-PROMPT_INIT = """
+# Prompt for CLI interface.
+PROMPT_CLI = """
 > Run face match algorithm.     [1]
 > Plot score distribution.      [2]
 > Find threshold score for EER. [3]
 > Run all.                      [0]
 > Exit.                         [e]
-:"""
+: """
 
 PROMPT_INPUT = """
 > Enter input folder path (press Enter for default):\t
